@@ -11,9 +11,9 @@ load("render.star", "canvas", "render")
 load("schema.star", "schema")
 
 FONT_DEFAULT = "default"
-DEFAULT_LABEL_FONT = "CG-pixel-4x5-mono"
+DEFAULT_LABEL_FONT = "tb-8"
 DEFAULT_LABEL_FONT_2X = "terminus-14"
-DEFAULT_VALUE_FONT = "CG-pixel-4x5-mono"
+DEFAULT_VALUE_FONT = "tb-8"
 DEFAULT_VALUE_FONT_2X = "terminus-16"
 DEFAULT_COLUMN_COUNT = "2"
 DEFAULT_LABEL_COLOR = "#FF0"
