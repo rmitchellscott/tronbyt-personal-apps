@@ -14,8 +14,11 @@ FONT_DEFAULT = "default"
 DEFAULT_LABEL_FONT = "CG-pixel-4x5-mono"
 DEFAULT_LABEL_FONT_2X = "terminus-14"
 DEFAULT_VALUE_FONT = "CG-pixel-4x5-mono"
-DEFAULT_VALUE_FONT_2X = "terminus-18-light"
+DEFAULT_VALUE_FONT_2X = "terminus-16"
 DEFAULT_COLUMN_COUNT = "2"
+DEFAULT_LABEL_COLOR = "#FF0"
+DEFAULT_VALUE_COLOR = "#FFF"
+DEFAULT_DIVIDER_COLOR = "#444"
 
 def main(config):
     scale = 2 if canvas.is2x() else 1
@@ -24,6 +27,8 @@ def main(config):
     columns = []
     for i in range(1, column_count + 1):
         label = config.get("col%d_label" % i, "Col %d" % i)
+        label_color = config.get("col%d_label_color" % i, DEFAULT_LABEL_COLOR)
+        value_color = config.get("col%d_value_color" % i, DEFAULT_VALUE_COLOR)
         sensor1 = fetch_sensor(config.get("col%d_sensor1_entity" % i), config)
         sensor2 = fetch_sensor(config.get("col%d_sensor2_entity" % i), config)
 
@@ -36,6 +41,8 @@ def main(config):
 
         columns.append({
             "label": label,
+            "label_color": label_color,
+            "value_color": value_color,
             "sensor1": sensor1,
             "sensor2": sensor2,
         })
@@ -58,11 +65,14 @@ def main(config):
         else:
             value_font = DEFAULT_VALUE_FONT_2X if scale == 2 else DEFAULT_VALUE_FONT
 
+    divider_color = config.get("divider_color", DEFAULT_DIVIDER_COLOR)
+
     return render.Root(
         child = render_columns(
             columns,
             label_font,
             value_font,
+            divider_color,
             scale,
         ),
     )
@@ -89,7 +99,7 @@ def fetch_sensor(entity_id, config):
 
     return float(state)
 
-def render_columns(columns, label_font, value_font, scale):
+def render_columns(columns, label_font, value_font, divider_color, scale):
     DIVIDER_WIDTH = 1 * scale
     HEIGHT = 32 * scale
 
@@ -98,10 +108,12 @@ def render_columns(columns, label_font, value_font, scale):
         children.append(
             render_column(
                 col["label"],
+                col["label_color"],
                 col["sensor1"],
                 col["sensor2"],
                 label_font,
                 value_font,
+                col["value_color"],
                 scale,
             ),
         )
@@ -111,7 +123,7 @@ def render_columns(columns, label_font, value_font, scale):
                 render.Box(
                     width = DIVIDER_WIDTH,
                     height = HEIGHT,
-                    color = "#444",
+                    color = divider_color,
                 ),
             )
 
@@ -121,7 +133,7 @@ def render_columns(columns, label_font, value_font, scale):
         children = children,
     )
 
-def render_column(label, sensor1, sensor2, label_font, value_font, scale):
+def render_column(label, label_color, sensor1, sensor2, label_font, value_font, value_color, scale):
     degree_symbol = "°" if scale == 2 else ""
 
     sensor1_rounded = math.round(sensor1 * 10) / 10
@@ -135,17 +147,17 @@ def render_column(label, sensor1, sensor2, label_font, value_font, scale):
             render.Text(
                 label,
                 font = label_font,
-                color = "#FF0",
+                color = label_color,
             ),
             render.Text(
                 str(sensor1_rounded) + degree_symbol,
                 font = value_font,
-                color = "#FFF",
+                color = value_color,
             ),
             render.Text(
                 "%d%%" % sensor2_rounded,
                 font = value_font,
-                color = "#FFF",
+                color = value_color,
             ),
         ],
     )
@@ -165,6 +177,20 @@ def generate_column_fields(column_count):
                 desc = "Label for column %d" % i,
                 icon = "tag",
                 default = "Col %d" % i,
+            ),
+            schema.Color(
+                id = "col%d_label_color" % i,
+                name = "Column %d Label Color" % i,
+                desc = "Color for column %d label" % i,
+                icon = "brush",
+                default = DEFAULT_LABEL_COLOR,
+            ),
+            schema.Color(
+                id = "col%d_value_color" % i,
+                name = "Column %d Value Color" % i,
+                desc = "Color for column %d values" % i,
+                icon = "brush",
+                default = DEFAULT_VALUE_COLOR,
             ),
             schema.Text(
                 id = "col%d_sensor1_entity" % i,
@@ -234,6 +260,13 @@ def get_schema():
                 icon = "font",
                 options = fonts,
                 default = FONT_DEFAULT,
+            ),
+            schema.Color(
+                id = "divider_color",
+                name = "Divider Color",
+                desc = "Color for column dividers",
+                icon = "brush",
+                default = DEFAULT_DIVIDER_COLOR,
             ),
             schema.Generated(
                 id = "generated_columns",
