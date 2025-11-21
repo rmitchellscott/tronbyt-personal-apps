@@ -7,6 +7,7 @@ Author: Lauren Kopac
 
 load("encoding/json.star", "json")
 load("http.star", "http")
+load("random.star", "random")
 load("re.star", "re")
 load("render.star", "canvas", "render")
 load("schema.star", "schema")
@@ -78,11 +79,7 @@ def main(config):
         MAX = "809"
     else:
         pass
-    resp = http.get("https://www.random.org/integers/?num=1&min=" + MIN + "&max=" + MAX + "&col=1&base=10&format=plain&rnd=new1")
-    if resp.status_code != 200:
-        fail("Request failed with status %d", resp.status_code)
-    dex_number = resp.body()
-    dex_number = re.sub("\n", "", dex_number)
+    dex_number = str(random.number(int(MIN), int(MAX)))
     id_ = dex_number
     pokemon = get_pokemon(id_)
     name = pokemon["name"].title()
@@ -106,18 +103,11 @@ def main(config):
     name_width, _ = name_text.size()
 
     if name_width + sprite_width > display_width:
-        name_text_small = render.Text(content = name, font = NAME_FONT_SMALL)
-        name_width_small, _ = name_text_small.size()
-
-        if name_width_small + sprite_width > display_width:
-            name_widget = render.Marquee(
-                width = display_width - sprite_width,
-                child = render.Text(content = name, font = NAME_FONT_SMALL),
-            )
-            number_font = NAME_FONT_SMALL
-        else:
-            name_widget = name_text_small
-            number_font = NAME_FONT_SMALL
+        name_widget = render.Marquee(
+            width = display_width - sprite_width,
+            child = render.Text(content = name, font = NAME_FONT_SMALL),
+        )
+        number_font = NAME_FONT_SMALL
     else:
         name_widget = name_text
 
