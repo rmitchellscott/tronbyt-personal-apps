@@ -1,6 +1,6 @@
 """
 Applet: National Pokedex
-Summary: Display a random Pokemon from Gen I - VII
+Summary: Display a random Pokemon from Gen I - IX
 Description: Display a random Pokemon from your region of choice
 Author: Lauren Kopac
 """
@@ -8,9 +8,9 @@ Author: Lauren Kopac
 load("encoding/json.star", "json")
 load("http.star", "http")
 load("random.star", "random")
-load("re.star", "re")
 load("render.star", "canvas", "render")
 load("schema.star", "schema")
+load("time.star", "time")
 
 POKEAPI_URL = "https://pokeapi.co/api/v2/pokemon/{}"
 REGIONAL_DEX_ID = "regional_dex_code"
@@ -22,8 +22,20 @@ NAME_FONT_SMALL = "tb-8"
 NUMBER_FONT_1X = "tb-8"
 NUMBER_FONT_2X = "terminus-14"
 
+REGION_RANGES = {
+    "Kanto": (1, 151),
+    "Johto": (152, 251),
+    "Hoenn": (252, 386),
+    "Sinnoh": (387, 493),
+    "Unova": (494, 649),
+    "Kalos": (650, 721),
+    "Alola": (722, 809),
+    "Galar": (810, 905),
+    "Paldea": (906, 1025),
+}
+
 def get_regions():
-    regions = ["National", "Kanto", "Johto", "Hoenn", "Sinnoh", "Unova", "Kalos", "Alola"]
+    regions = ["National", "Kanto", "Johto", "Hoenn", "Sinnoh", "Unova", "Kalos", "Alola", "Galar", "Paldea"]
     region_options = []
     for x in regions:
         region_options.append(
@@ -51,37 +63,14 @@ def get_schema():
     )
 
 def main(config):
-    MIN = "1"
-    MAX = "809"
     dex_region = config.get(REGIONAL_DEX_ID)
-    if dex_region == "National":
-        pass
-    elif dex_region == "Kanto":
-        MIN = "1"
-        MAX = "151"
-    elif dex_region == "Johto":
-        MIN = "152"
-        MAX = "251"
-    elif dex_region == "Hoenn":
-        MIN = "252"
-        MAX = "386"
-    elif dex_region == "Sinnoh":
-        MIN = "387"
-        MAX = "493"
-    elif dex_region == "Unova":
-        MIN = "494"
-        MAX = "649"
-    elif dex_region == "Kalos":
-        MIN = "650"
-        MAX = "721"
-    elif dex_region == "Alola":
-        MIN = "722"
-        MAX = "809"
-    else:
-        pass
-    dex_number = str(random.number(int(MIN), int(MAX)))
-    id_ = dex_number
-    pokemon = get_pokemon(id_)
+    MIN, MAX = 1, 1025
+    if dex_region in REGION_RANGES:
+        MIN, MAX = REGION_RANGES[dex_region]
+
+    random.seed(time.now().unix // 15)
+    dex_number = random.number(MIN, MAX)
+    pokemon = get_pokemon(dex_number)
     name = pokemon["name"].title()
 
     scale = 2 if canvas.is2x() else 1
@@ -111,7 +100,7 @@ def main(config):
     else:
         name_widget = name_text
 
-    number_text = render.Text(content = "#" + dex_number, font = number_font)
+    number_text = render.Text(content = "#{}".format(dex_number), font = number_font)
     _, number_height = number_text.size()
     bottom_margin = 0
     number_top_padding = (32 * scale) - number_height - bottom_margin
@@ -146,32 +135,10 @@ def main(config):
         ),
     )
 
-def round(num):
-    """Rounds floats to a single decimal place."""
-    return float(int(num * 10) / 10)
-
 def get_pokemon(id):
     url = POKEAPI_URL.format(id)
     data = get_cachable_data(url)
     return json.decode(data)
-
-def get_region(dex_number):
-    if int(dex_number) < 152:
-        return "Kanto"
-    elif int(dex_number) < 252:
-        return "Johto"
-    elif int(dex_number) < 387:
-        return "Hoenn"
-    elif int(dex_number) < 494:
-        return "Sinnoh"
-    elif int(dex_number) < 650:
-        return "Unova"
-    elif int(dex_number) < 722:
-        return "Kalos"
-    elif int(dex_number) < 810:
-        return "Alola"
-    else:
-        return "Habitat Unknown"
 
 def get_cachable_data(url, ttl_seconds = CACHE_TTL_SECONDS):
     res = http.get(url = url, ttl_seconds = ttl_seconds)
