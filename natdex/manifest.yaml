@@ -1,0 +1,10 @@
+---
+id: natdex2
+name: National Pokedex 2
+summary: Display random Pokemon
+desc: Display a random Pokemon from your region of choice.
+author: Lauren Kopac
+fileName: natdex.star
+packageName: natdex
+recommended_interval: 5
+supports2x: true
