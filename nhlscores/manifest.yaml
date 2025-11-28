@@ -1,0 +1,10 @@
+---
+id: nhl-scores-cx
+name: NHL Scores Custom
+summary: NHL hockey scores
+desc: Creating multiple app instances is no longer necessary. Just install once and remove any other instances. You can set the rotation speed of scores in the settings.
+author: LunchBox8484
+fileName: nhl_scores.star
+packageName: nhlscores
+recommended_interval: 5
+recommendedInterval: 5
